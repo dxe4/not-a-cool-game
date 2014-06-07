@@ -38,6 +38,14 @@ class Box(object):
         self.text_pos = (self.x - 25, self.y - 20)
         self.number = str(random.sample(fib_numbers, 1)[0])
 
+    def __eq__(self, other):
+        if not isinstance(Box, other):
+            return False
+        return other.pos == self.pos and other.number == self.number
+
+    def __hash__(self):
+        return hash((self.pos, self.number))
+
     @property
     def x(self):
         return self.pos[0]
@@ -49,7 +57,6 @@ class Box(object):
     def draw(self, BOX_SIZE):
         Color(0, 0, 1., 1)
         Rectangle(pos=self.pos, size=(BOX_SIZE, BOX_SIZE))
-        Color(0, 0, 0)
         Label(text=self.number, font_size=15, pos=self.text_pos)
 
 
@@ -122,20 +129,19 @@ class PongGame(Widget):
     def random_box(self):
         if not self.free_boxes:
             return
-        copy(self.free_boxes)
         new_box = random.sample(self.free_boxes, 1)[0]
         self.boxes.add(new_box)
 
 
     def draw_boxes(self):
         self.random_box()
-        for i in (j for j in self.boxes):
+        self.player.draw(self.BOX_SIZE)
+        for i in self.boxes:
             i.draw(self.BOX_SIZE)
-            self.player.draw(self.BOX_SIZE)
 
     def update(self, dt):
+        self.canvas.clear()
         with self.canvas:
-            self.canvas.clear()
             self.draw_boxes()
 
 
@@ -143,7 +149,7 @@ class PongApp(App):
     def build(self):
         self.game = PongGame()
         self.game.setup()
-        Clock.schedule_interval(self.game.update, 1.0 / 1.0)
+        Clock.schedule_interval(self.game.update, 1.0 / 5.0)
         return self.game
 
 

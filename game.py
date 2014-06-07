@@ -18,6 +18,7 @@ moves = {
     "down": (0, -1)
 }
 
+BOX_SIZE = 100
 
 def fibonacci(max_iter):
     a, b = 1, 1
@@ -53,7 +54,7 @@ class Box(object):
     def y(self):
         return self.pos[1]
 
-    def draw(self, BOX_SIZE):
+    def draw(self):
         Color(0, 0, 1., 1)
         Rectangle(pos=self.pos, size=(BOX_SIZE, BOX_SIZE))
         Label(text=self.number, font_size=15, pos=self.pos)
@@ -65,7 +66,7 @@ class Player(Box):
         super(Player, self).__init__(x, y)
         self.old_pos = None
 
-    def draw(self, BOX_SIZE):
+    def draw(self):
         Color(1, 0, 0, 1)
         Rectangle(pos=self.pos, size=(BOX_SIZE, BOX_SIZE))
         if self.old_pos:
@@ -79,7 +80,7 @@ class Player(Box):
         if new_pos in free_boxes_pos:
             self.old_pos = copy(self.pos)
             self.pos = new_pos
-            self.draw(100)
+            self.draw()
         else:
             raise InvalidMove("Cant move to {}".format(new_pos))
 
@@ -102,21 +103,20 @@ class PongGame(Widget):
         pos_diff = moves[keycode[1]]
         try:
             with self.canvas:
-                self.player.move(self.free_boxes_pos, pos_diff, self.BOX_SIZE)
+                self.player.move(self.free_boxes_pos, pos_diff, BOX_SIZE)
         except InvalidMove as e:
             print(e)
 
     def setup(self):
         H, W = starmap(Config.getint, (("graphics", i) for i in ("height", "width")))
-        self.BOX_SIZE = 100
-        self.all_boxes = [Box(i, j) for i in range(0, H, self.BOX_SIZE)
-                          for j in range(0, W, self.BOX_SIZE)]
+
+        self.all_boxes = [Box(i, j) for i in range(0, H+1, BOX_SIZE)
+                          for j in range(0, W+1, BOX_SIZE)]
         self.boxes = set()
         rand_int = random.randint(0, len(self.all_boxes))
 
         rand_box = self.all_boxes[rand_int]
         self.player = Player(rand_box.x, rand_box.y)
-        print(self.player.pos)
         self.setup_keuboard()
 
     @property
@@ -138,9 +138,9 @@ class PongGame(Widget):
 
     def draw_boxes(self):
         self.random_box()
-        self.player.draw(self.BOX_SIZE)
+        self.player.draw()
         for i in (j for j in self.boxes if not j.drawn):
-            i.draw(self.BOX_SIZE)
+            i.draw()
 
     def update(self, dt):
         with self.canvas:
@@ -149,7 +149,7 @@ class PongGame(Widget):
 
 class PongApp(App):
     def build(self):
-        self.game = PongGame()
+        self.game = PongGame(size=(900,600))
         self.game.setup()
         Clock.schedule_interval(self.game.update, 1.0 / 1.0)
         return self.game

@@ -43,7 +43,7 @@ class Box(object):
         self.drawn = False
 
     def __eq__(self, other):
-        if not isinstance(Box, other):
+        if not isinstance(other, Box):
             return False
         return other.pos == self.pos and other.number == self.number
 
@@ -72,17 +72,16 @@ class Box(object):
         Rectangle(pos=self.old_pos, size=(BOX_SIZE, BOX_SIZE))
         self.old_pos = None
 
-    def _move(self, pos_diff, free_boxes):
+    def _move(self, pos_diff, free_boxes_pos, change_pos=True):
         x_diff, y_diff = pos_diff
         new_pos = self.x + x_diff * BOX_SIZE, self.y + y_diff * BOX_SIZE
 
-        try:
-            next((i for i in free_boxes if i.pos == new_pos))
-            self.old_pos = copy(self.pos)
-            self.pos = new_pos
-            self.draw()
-        except StopIteration:
+        if new_pos not in free_boxes_pos:
             raise InvalidMove
+
+        self.old_pos = copy(self.pos)
+        self.pos = new_pos
+        self.draw()
 
 # Evil
 class Player(Box):
@@ -94,21 +93,20 @@ class Player(Box):
         Rectangle(pos=self.pos, size=(BOX_SIZE, BOX_SIZE))
         self._draw_old_pos()
 
-    def move(self, occupied_boxes, free_boxes, pos_diff):
+    def move(self, occupied_boxes, free_boxes_pos, pos_diff):
         x_diff, y_diff = pos_diff
         new_pos = self.x + x_diff * BOX_SIZE, self.y + y_diff * BOX_SIZE
 
         try:
-            self._move(pos_diff, free_boxes)
+            self._move(pos_diff, free_boxes_pos)
         except InvalidMove:
-            try:
-                box_to_move = next((i for i in occupied_boxes if new_pos == i.pos))
-                box_to_move._move(pos_diff, free_boxes)
-                self.old_pos = copy(self.pos)
-                self.pos = new_pos
-                self.draw()
-            except (StopIteration, InvalidMove):
-                raise InvalidMove("Cant move to {}".format(new_pos))
+            pass
+        try:
+            box_to_move = next((i for i in occupied_boxes if new_pos == i.pos))
+            box_to_move._move(pos_diff, free_boxes_pos)
+            self._move(pos_diff, [new_pos])
+        except (StopIteration, InvalidMove):
+            raise InvalidMove("Cant move to {}".format(new_pos))
 
 
 class PongGame(Widget):
@@ -134,7 +132,7 @@ class PongGame(Widget):
 
         try:
             with self.canvas:
-                self.player.move(self.boxes, self.free_boxes, pos_diff)
+                self.player.move(self.boxes, self.free_boxes_pos, pos_diff)
         except InvalidMove as e:
             print(e)
 
@@ -162,7 +160,7 @@ class PongGame(Widget):
     def random_box(self):
         if not self.free_boxes:
             return
-        new_box = random.sample(self.free_boxes, 1)[0]
+        new_box = copy(random.sample(self.free_boxes, 1)[0])
         self.boxes.add(new_box)
 
 

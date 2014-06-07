@@ -10,7 +10,6 @@ from itertools import starmap
 import random
 from copy import copy
 
-
 def fibonacci(max_iter):
     a, b = 1, 1
     for i in range(0, max_iter):
@@ -40,7 +39,7 @@ class DrawableMixIn(object):
         self.color = color
         self.drawn = False
 
-    def _move(self, pos_diff, free_boxes_pos, change_pos=True):
+    def _move(self, pos_diff, free_boxes_pos):
         x_diff, y_diff = pos_diff
         new_pos = self.x + x_diff * BOX_SIZE, self.y + y_diff * BOX_SIZE
 
@@ -52,11 +51,13 @@ class DrawableMixIn(object):
         self.draw()
 
     def draw(self):
-        self._clean_old_pos()
-        Color(*self.color)
-        Rectangle(pos=self.pos, size=(BOX_SIZE, BOX_SIZE))
-        Label(text=self.label, font_size=15, pos=self.pos)
+        # Avoid garbage collection to draw them...
+        self._rec_color = Color(*self.color)
+        self._rec = Rectangle(pos=self.pos, size=(BOX_SIZE, BOX_SIZE))
+        self._label_color = Color(0, 0, 0)
+        self._label = Label(text=self.label, font_size=15, pos=self.pos)
         self.drawn = True
+        self._clean_old_pos()
 
     def _clean_old_pos(self):
         if not self.old_pos:
@@ -133,6 +134,7 @@ class NotACoolGame(Widget):
         return Player(rand_box.x, rand_box.y, "player", (1, 0, 0))
 
     def setup(self):
+        self.count = 0
         H, W = starmap(Config.getint, (("graphics", i) for i in ("height", "width")))
 
         self.all_boxes = [Box(i, j, str(random.sample(fib_numbers, 1)[0]), (0, 0, 1))
@@ -160,18 +162,18 @@ class NotACoolGame(Widget):
         self.boxes.add(new_box)
 
     def update(self, dt):
+        self.count +=1
         with self.canvas:
             self.random_box()
             self.player.draw()
-            for i in (j for j in self.boxes if not j.drawn):
+            for i in (j for j in self.boxes):
                 i.draw()
-
 
 class PongApp(App):
     def build(self):
         self.game = NotACoolGame()
         self.game.setup()
-        Clock.schedule_interval(self.game.update, 1.0 / 2.0)
+        Clock.schedule_interval(self.game.update, 1.0 / 1.0)
         return self.game
 
 

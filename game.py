@@ -4,7 +4,6 @@ from kivy.graphics.context_instructions import Color
 from kivy.graphics.vertex_instructions import Rectangle
 from kivy.uix.label import Label
 from kivy.uix.widget import Widget
-from kivy.properties import ObjectProperty
 from kivy.clock import Clock
 from kivy.config import Config
 from itertools import starmap
@@ -34,10 +33,11 @@ class InvalidMove(Exception):
 
 
 class DrawableMixIn(object):
-    def __init__(self, x, y):
+    def __init__(self, x, y, label, color):
         self.old_pos = None
         self.pos = (x, y)
-        self.number = str(random.sample(fib_numbers, 1)[0])
+        self.label = label
+        self.color = color
         self.drawn = False
 
     def _move(self, pos_diff, free_boxes_pos, change_pos=True):
@@ -53,9 +53,9 @@ class DrawableMixIn(object):
 
     def draw(self):
         self._clean_old_pos()
-        Color(0, 0, 1., 1)
+        Color(*self.color)
         Rectangle(pos=self.pos, size=(BOX_SIZE, BOX_SIZE))
-        Label(text=self.number, font_size=15, pos=self.pos)
+        Label(text=self.label, font_size=15, pos=self.pos)
         self.drawn = True
 
     def _clean_old_pos(self):
@@ -78,21 +78,16 @@ class Box(DrawableMixIn):
     def __eq__(self, other):
         if not isinstance(other, Box):
             return False
-        return other.pos == self.pos and other.number == self.number
+        return other.pos == self.pos and other.label == self.label
 
     def __hash__(self):
-        return hash((self.pos, self.number))
+        return hash((self.pos, self.label))
 
 
-# Evil
 class Player(DrawableMixIn):
-    def __init__(self, x, y):
-        super(Player, self).__init__(x, y)
+    def __init__(self, x, y, label, color):
+        super(Player, self).__init__(x, y, label, color)
 
-    def draw(self):
-        Color(1, 0, 0, 1)
-        Rectangle(pos=self.pos, size=(BOX_SIZE, BOX_SIZE))
-        self._clean_old_pos()
 
     def move(self, occupied_boxes, free_boxes_pos, pos_diff):
         x_diff, y_diff = pos_diff
@@ -135,12 +130,13 @@ class NotACoolGame(Widget):
     def make_player(self, all_boxes):
         rand_int = random.randint(0, len(all_boxes))
         rand_box = self.all_boxes[rand_int]
-        return Player(rand_box.x, rand_box.y)
+        return Player(rand_box.x, rand_box.y, "player", (1, 0, 0))
 
     def setup(self):
         H, W = starmap(Config.getint, (("graphics", i) for i in ("height", "width")))
 
-        self.all_boxes = [Box(i, j) for i in range(0, H, BOX_SIZE)
+        self.all_boxes = [Box(i, j, str(random.sample(fib_numbers, 1)[0]), (0, 0, 1))
+                          for i in range(0, H, BOX_SIZE)
                           for j in range(0, W, BOX_SIZE)]
         self.boxes = set()
 
@@ -175,7 +171,7 @@ class PongApp(App):
     def build(self):
         self.game = NotACoolGame()
         self.game.setup()
-        Clock.schedule_interval(self.game.update, 1.0 * 2.0)
+        Clock.schedule_interval(self.game.update, 1.0 / 2.0)
         return self.game
 
 

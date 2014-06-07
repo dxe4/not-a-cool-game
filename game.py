@@ -34,9 +34,8 @@ class InvalidMove(Exception):
 class Box(object):
     def __init__(self, x, y):
         self.pos = (x, y)
-        # TODO fix this
-        self.text_pos = (self.x - 25, self.y - 20)
         self.number = str(random.sample(fib_numbers, 1)[0])
+        self.drawn = False
 
     def __eq__(self, other):
         if not isinstance(Box, other):
@@ -57,8 +56,8 @@ class Box(object):
     def draw(self, BOX_SIZE):
         Color(0, 0, 1., 1)
         Rectangle(pos=self.pos, size=(BOX_SIZE, BOX_SIZE))
-        Label(text=self.number, font_size=15, pos=self.text_pos)
-
+        Label(text=self.number, font_size=15, pos=self.pos)
+        self.drawn = True
 
 # Evil
 class Player(Box):
@@ -69,13 +68,16 @@ class Player(Box):
     def draw(self, BOX_SIZE):
         Color(1, 0, 0, 1)
         Rectangle(pos=self.pos, size=(BOX_SIZE, BOX_SIZE))
-
+        if self.old_pos:
+            Color(0, 0, 0, 1)
+            Rectangle(pos=self.old_pos, size=(BOX_SIZE, BOX_SIZE))
+            self.old_pos = None
 
     def move(self, free_boxes_pos, pos_diff, BOX_SIZE):
         x_diff, y_diff = pos_diff
         new_pos = self.x + x_diff* BOX_SIZE, self.y + y_diff * BOX_SIZE
         if new_pos in free_boxes_pos:
-            self.old_pos = self.pos
+            self.old_pos = copy(self.pos)
             self.pos = new_pos
             self.draw(100)
         else:
@@ -97,10 +99,10 @@ class PongGame(Widget):
         self._keyboard = None
 
     def _on_keyboard_down(self, keyboard, keycode, text, modifiers):
-        print(keycode)
         pos_diff = moves[keycode[1]]
         try:
-            self.player.move(self.free_boxes_pos, pos_diff, self.BOX_SIZE)
+            with self.canvas:
+                self.player.move(self.free_boxes_pos, pos_diff, self.BOX_SIZE)
         except InvalidMove as e:
             print(e)
 
@@ -114,6 +116,7 @@ class PongGame(Widget):
 
         rand_box = self.all_boxes[rand_int]
         self.player = Player(rand_box.x, rand_box.y)
+        print(self.player.pos)
         self.setup_keuboard()
 
     @property
@@ -136,11 +139,10 @@ class PongGame(Widget):
     def draw_boxes(self):
         self.random_box()
         self.player.draw(self.BOX_SIZE)
-        for i in self.boxes:
+        for i in (j for j in self.boxes if not j.drawn):
             i.draw(self.BOX_SIZE)
 
     def update(self, dt):
-        self.canvas.clear()
         with self.canvas:
             self.draw_boxes()
 
@@ -149,7 +151,7 @@ class PongApp(App):
     def build(self):
         self.game = PongGame()
         self.game.setup()
-        Clock.schedule_interval(self.game.update, 1.0 / 5.0)
+        Clock.schedule_interval(self.game.update, 1.0 / 1.0)
         return self.game
 
 

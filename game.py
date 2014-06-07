@@ -101,7 +101,12 @@ class PongGame(Widget):
         self._keyboard = None
 
     def _on_keyboard_down(self, keyboard, keycode, text, modifiers):
-        pos_diff = moves[keycode[1]]
+        try:
+            pos_diff = moves[keycode[1]]
+        except KeyError:
+            # key pressed if not key in (up,down,left,right)
+            return
+
         try:
             with self.canvas:
                 self.player.move(self.free_boxes_pos, pos_diff, BOX_SIZE)
@@ -110,7 +115,6 @@ class PongGame(Widget):
 
     def setup(self):
         H, W = starmap(Config.getint, (("graphics", i) for i in ("height", "width")))
-        print(H,W)
         self.all_boxes = [Box(i, j) for i in range(0, H, BOX_SIZE)
                           for j in range(0, W, BOX_SIZE)]
         self.boxes = set()

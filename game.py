@@ -35,28 +35,23 @@ class InvalidMove(Exception):
     pass
 
 
-class Box(object):
+class DrawableMixIn(object):
     def __init__(self, x, y):
         self.old_pos = None
         self.pos = (x, y)
         self.number = str(random.sample(fib_numbers, 1)[0])
         self.drawn = False
 
-    def __eq__(self, other):
-        if not isinstance(other, Box):
-            return False
-        return other.pos == self.pos and other.number == self.number
+    def _move(self, pos_diff, free_boxes_pos, change_pos=True):
+        x_diff, y_diff = pos_diff
+        new_pos = self.x + x_diff * BOX_SIZE, self.y + y_diff * BOX_SIZE
 
-    def __hash__(self):
-        return hash((self.pos, self.number))
+        if new_pos not in free_boxes_pos:
+            raise InvalidMove
 
-    @property
-    def x(self):
-        return self.pos[0]
-
-    @property
-    def y(self):
-        return self.pos[1]
+        self.old_pos = copy(self.pos)
+        self.pos = new_pos
+        self.draw()
 
     def draw(self):
         self._clean_old_pos()
@@ -72,19 +67,27 @@ class Box(object):
         Rectangle(pos=self.old_pos, size=(BOX_SIZE, BOX_SIZE))
         self.old_pos = None
 
-    def _move(self, pos_diff, free_boxes_pos, change_pos=True):
-        x_diff, y_diff = pos_diff
-        new_pos = self.x + x_diff * BOX_SIZE, self.y + y_diff * BOX_SIZE
+    @property
+    def x(self):
+        return self.pos[0]
 
-        if new_pos not in free_boxes_pos:
-            raise InvalidMove
+    @property
+    def y(self):
+        return self.pos[1]
 
-        self.old_pos = copy(self.pos)
-        self.pos = new_pos
-        self.draw()
+
+class Box(DrawableMixIn):
+    def __eq__(self, other):
+        if not isinstance(other, Box):
+            return False
+        return other.pos == self.pos and other.number == self.number
+
+    def __hash__(self):
+        return hash((self.pos, self.number))
+
 
 # Evil
-class Player(Box):
+class Player(DrawableMixIn):
     def __init__(self, x, y):
         super(Player, self).__init__(x, y)
 
@@ -129,7 +132,6 @@ class PongGame(Widget):
         except KeyError:
             # key pressed if not key in (up,down,left,right)
             return
-
         try:
             with self.canvas:
                 self.player.move(self.boxes, self.free_boxes_pos, pos_diff)

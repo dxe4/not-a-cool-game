@@ -39,8 +39,9 @@ class Box():
         Color(0, 0, 1., 1)
         Rectangle(pos=(self.x, self.y), size=(BOX_SIZE, BOX_SIZE))
         Color(0, 0, 0)
-        x, y = (self.x + 30, self.y + 30)
-        Label(text=self.number, font_size=40, pos=(x, y))
+        # TODO fix this
+        x, y = (self.x - 25, self.y - 20)
+        Label(text=self.number, font_size=15, pos=(x, y))
         self.drawn = True
 
 
@@ -51,7 +52,7 @@ class PongGame(Widget):
 
     def setup(self):
         H, W = starmap(Config.getint, (("graphics", i) for i in ("height", "width")))
-        self.BOX_SIZE = 200
+        self.BOX_SIZE = 50
         self.free_boxes = {Box(i, j) for i in range(0, H, self.BOX_SIZE)
                            for j in range(0, W, self.BOX_SIZE)}
         self.boxes = set()

@@ -63,9 +63,9 @@ class Box(object):
         Rectangle(pos=self.pos, size=(BOX_SIZE, BOX_SIZE))
         Label(text=self.number, font_size=15, pos=self.pos)
         self.drawn = True
-        self._draw_old_pos()
+        self._clean_old_pos()
 
-    def _draw_old_pos(self):
+    def _clean_old_pos(self):
         if not self.old_pos:
             return
         Color(0, 0, 0, 1)
@@ -91,7 +91,7 @@ class Player(Box):
     def draw(self):
         Color(1, 0, 0, 1)
         Rectangle(pos=self.pos, size=(BOX_SIZE, BOX_SIZE))
-        self._draw_old_pos()
+        self._clean_old_pos()
 
     def move(self, occupied_boxes, free_boxes_pos, pos_diff):
         x_diff, y_diff = pos_diff

@@ -134,7 +134,7 @@ class PongGame(Widget):
             with self.canvas:
                 self.player.move(self.boxes, self.free_boxes_pos, pos_diff)
         except InvalidMove as e:
-            print(e)
+            pass
 
     def setup(self):
         H, W = starmap(Config.getint, (("graphics", i) for i in ("height", "width")))
@@ -179,7 +179,7 @@ class PongApp(App):
     def build(self):
         self.game = PongGame()
         self.game.setup()
-        Clock.schedule_interval(self.game.update, 1.0 * 1.0)
+        Clock.schedule_interval(self.game.update, 1.0 * 5.0)
         return self.game
 
 

@@ -35,7 +35,7 @@ class Box(object):
     def __init__(self, x, y):
         self.pos = (x, y)
         # TODO fix this
-        self.text_post = (self.x - 25, self.y - 20)
+        self.text_pos = (self.x - 25, self.y - 20)
         self.number = str(random.sample(fib_numbers, 1)[0])
 
     @property
@@ -50,7 +50,7 @@ class Box(object):
         Color(0, 0, 1., 1)
         Rectangle(pos=self.pos, size=(BOX_SIZE, BOX_SIZE))
         Color(0, 0, 0)
-        Label(text=self.number, font_size=15, pos=self.text_post)
+        Label(text=self.number, font_size=15, pos=self.text_pos)
 
 
 # Evil
@@ -62,11 +62,7 @@ class Player(Box):
     def draw(self, BOX_SIZE):
         Color(1, 0, 0, 1)
         Rectangle(pos=self.pos, size=(BOX_SIZE, BOX_SIZE))
-        if self.old_pos:
-            print(self.old_pos)
-            Color(0, 1, 0, 1)
-            Rectangle(pos=self.old_pos, size=(BOX_SIZE, BOX_SIZE))
-            self.old_pos = None
+
 
     def move(self, free_boxes_pos, pos_diff, BOX_SIZE):
         x_diff, y_diff = pos_diff

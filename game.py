@@ -66,21 +66,23 @@ class Box(object):
         self._draw_old_pos()
 
     def _draw_old_pos(self):
-        if self.old_pos:
-            Color(0, 0, 0, 1)
-            Rectangle(pos=self.old_pos, size=(BOX_SIZE, BOX_SIZE))
-            self.old_pos = None
+        if not self.old_pos:
+            return
+        Color(0, 0, 0, 1)
+        Rectangle(pos=self.old_pos, size=(BOX_SIZE, BOX_SIZE))
+        self.old_pos = None
 
-    def _move(self, pos_diff, free_boxes_pos):
+    def _move(self, pos_diff, free_boxes):
         x_diff, y_diff = pos_diff
         new_pos = self.x + x_diff * BOX_SIZE, self.y + y_diff * BOX_SIZE
-        if new_pos in free_boxes_pos:
+
+        try:
+            next((i for i in free_boxes if i.pos == new_pos))
             self.old_pos = copy(self.pos)
             self.pos = new_pos
             self.draw()
-        else:
+        except StopIteration:
             raise InvalidMove
-
 
 # Evil
 class Player(Box):
@@ -92,16 +94,16 @@ class Player(Box):
         Rectangle(pos=self.pos, size=(BOX_SIZE, BOX_SIZE))
         self._draw_old_pos()
 
-    def move(self, occupied_boxes, free_boxes_pos, pos_diff):
+    def move(self, occupied_boxes, free_boxes, pos_diff):
         x_diff, y_diff = pos_diff
         new_pos = self.x + x_diff * BOX_SIZE, self.y + y_diff * BOX_SIZE
 
         try:
-            self._move(pos_diff, free_boxes_pos)
+            self._move(pos_diff, free_boxes)
         except InvalidMove:
             try:
                 box_to_move = next((i for i in occupied_boxes if new_pos == i.pos))
-                box_to_move._move(pos_diff, free_boxes_pos)
+                box_to_move._move(pos_diff, free_boxes)
                 self.old_pos = copy(self.pos)
                 self.pos = new_pos
                 self.draw()
@@ -114,7 +116,7 @@ class PongGame(Widget):
     player1 = ObjectProperty(None)
     player2 = ObjectProperty(None)
 
-    def setup_keuboard(self):
+    def setup_keyboard(self):
         self._keyboard = Window.request_keyboard(
             self._keyboard_closed, self, 'text')
         self._keyboard.bind(on_key_down=self._on_keyboard_down)
@@ -132,7 +134,7 @@ class PongGame(Widget):
 
         try:
             with self.canvas:
-                self.player.move(self.boxes, self.free_boxes_pos, pos_diff)
+                self.player.move(self.boxes, self.free_boxes, pos_diff)
         except InvalidMove as e:
             print(e)
 
@@ -145,7 +147,7 @@ class PongGame(Widget):
 
         rand_box = self.all_boxes[rand_int]
         self.player = Player(rand_box.x, rand_box.y)
-        self.setup_keuboard()
+        self.setup_keyboard()
 
     @property
     def free_boxes_pos(self):

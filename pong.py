@@ -1,7 +1,7 @@
 from kivy.app import App
 from kivy.graphics.context_instructions import Color
 from kivy.graphics.texture import Texture
-from kivy.graphics.vertex_instructions import Rectangle
+from kivy.graphics.vertex_instructions import Rectangle, Ellipse
 from kivy.uix.label import Label
 from kivy.uix.widget import Widget
 from kivy.properties import (
@@ -44,6 +44,12 @@ class Box():
         Label(text=self.number, font_size=15, pos=(x, y))
         self.drawn = True
 
+# Evil
+def Player(Box):
+    def draw(self, BOX_SIZE):
+        Color(1, 0, 0, 1)
+        Ellipse(pos=(self.x - BOX_SIZE / 2, self.y - BOX_SIZE / 2), size=(BOX_SIZE, BOX_SIZE))
+
 
 class PongGame(Widget):
     ball = ObjectProperty(None)
@@ -52,7 +58,7 @@ class PongGame(Widget):
 
     def setup(self):
         H, W = starmap(Config.getint, (("graphics", i) for i in ("height", "width")))
-        self.BOX_SIZE = 50
+        self.BOX_SIZE = 100
         self.free_boxes = {Box(i, j) for i in range(0, H, self.BOX_SIZE)
                            for j in range(0, W, self.BOX_SIZE)}
         self.boxes = set()

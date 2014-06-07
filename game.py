@@ -121,6 +121,7 @@ class NotACoolGame(Widget):
             pos_diff = moves[keycode[1]]
         except KeyError:
             # key pressed if not key in (up,down,left,right)
+            self.slow_mode = False
             return
         try:
             with self.canvas:
@@ -134,6 +135,7 @@ class NotACoolGame(Widget):
         return Player(rand_box.x, rand_box.y, "player", (1, 0, 0))
 
     def setup(self):
+        self.slow_mode = True
         self.count = 0
         H, W = starmap(Config.getint, (("graphics", i) for i in ("height", "width")))
 
@@ -163,6 +165,8 @@ class NotACoolGame(Widget):
 
     def update(self, dt):
         self.count +=1
+        if self.count % 10 and self.slow_mode:
+            return
         with self.canvas:
             self.random_box()
             self.player.draw()
@@ -173,7 +177,7 @@ class NotACoolApp(App):
     def build(self):
         self.game = NotACoolGame()
         self.game.setup()
-        Clock.schedule_interval(self.game.update, 1.0 / 1.0)
+        Clock.schedule_interval(self.game.update, 1.0 / 10)
         return self.game
 
 

@@ -20,13 +20,16 @@ moves = {
 
 BOX_SIZE = 100
 
+
 def fibonacci(max_iter):
     a, b = 1, 1
     for i in range(0, max_iter):
         yield a
         a, b = b, a + b
 
+
 fib_numbers = [i for i in fibonacci(20)]
+
 
 class InvalidMove(Exception):
     pass
@@ -34,6 +37,7 @@ class InvalidMove(Exception):
 
 class Box(object):
     def __init__(self, x, y):
+        self.old_pos = None
         self.pos = (x, y)
         self.number = str(random.sample(fib_numbers, 1)[0])
         self.drawn = False
@@ -59,31 +63,50 @@ class Box(object):
         Rectangle(pos=self.pos, size=(BOX_SIZE, BOX_SIZE))
         Label(text=self.number, font_size=15, pos=self.pos)
         self.drawn = True
+        self._draw_old_pos()
 
-# Evil
-class Player(Box):
-    def __init__(self, x, y):
-        super(Player, self).__init__(x, y)
-        self.old_pos = None
-
-    def draw(self):
-        Color(1, 0, 0, 1)
-        Rectangle(pos=self.pos, size=(BOX_SIZE, BOX_SIZE))
+    def _draw_old_pos(self):
         if self.old_pos:
             Color(0, 0, 0, 1)
             Rectangle(pos=self.old_pos, size=(BOX_SIZE, BOX_SIZE))
             self.old_pos = None
 
-    def move(self, free_boxes_pos, pos_diff, BOX_SIZE):
+    def _move(self, pos_diff, free_boxes_pos):
         x_diff, y_diff = pos_diff
-        new_pos = self.x + x_diff* BOX_SIZE, self.y + y_diff * BOX_SIZE
+        new_pos = self.x + x_diff * BOX_SIZE, self.y + y_diff * BOX_SIZE
         if new_pos in free_boxes_pos:
             self.old_pos = copy(self.pos)
             self.pos = new_pos
             self.draw()
-            print(new_pos)
         else:
-            raise InvalidMove("Cant move to {}".format(new_pos))
+            raise InvalidMove
+
+
+# Evil
+class Player(Box):
+    def __init__(self, x, y):
+        super(Player, self).__init__(x, y)
+
+    def draw(self):
+        Color(1, 0, 0, 1)
+        Rectangle(pos=self.pos, size=(BOX_SIZE, BOX_SIZE))
+        self._draw_old_pos()
+
+    def move(self, occupied_boxes, free_boxes_pos, pos_diff):
+        x_diff, y_diff = pos_diff
+        new_pos = self.x + x_diff * BOX_SIZE, self.y + y_diff * BOX_SIZE
+
+        try:
+            self._move(pos_diff, free_boxes_pos)
+        except InvalidMove:
+            try:
+                box_to_move = next((i for i in occupied_boxes if new_pos == i.pos))
+                box_to_move._move(pos_diff, free_boxes_pos)
+                self.old_pos = copy(self.pos)
+                self.pos = new_pos
+                self.draw()
+            except (StopIteration, InvalidMove):
+                raise InvalidMove("Cant move to {}".format(new_pos))
 
 
 class PongGame(Widget):
@@ -109,7 +132,7 @@ class PongGame(Widget):
 
         try:
             with self.canvas:
-                self.player.move(self.free_boxes_pos, pos_diff, BOX_SIZE)
+                self.player.move(self.boxes, self.free_boxes_pos, pos_diff)
         except InvalidMove as e:
             print(e)
 
@@ -126,7 +149,7 @@ class PongGame(Widget):
 
     @property
     def free_boxes_pos(self):
-        return (i.pos for i in self.free_boxes)
+        return [i.pos for i in self.free_boxes]
 
     @property
     def free_boxes(self):
@@ -156,7 +179,7 @@ class PongApp(App):
     def build(self):
         self.game = PongGame()
         self.game.setup()
-        Clock.schedule_interval(self.game.update, 1.0 / 1.0)
+        Clock.schedule_interval(self.game.update, 1.0 * 1.0)
         return self.game
 
 

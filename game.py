@@ -81,6 +81,7 @@ class Player(Box):
             self.old_pos = copy(self.pos)
             self.pos = new_pos
             self.draw()
+            print(new_pos)
         else:
             raise InvalidMove("Cant move to {}".format(new_pos))
 
@@ -109,9 +110,9 @@ class PongGame(Widget):
 
     def setup(self):
         H, W = starmap(Config.getint, (("graphics", i) for i in ("height", "width")))
-
-        self.all_boxes = [Box(i, j) for i in range(0, H+1, BOX_SIZE)
-                          for j in range(0, W+1, BOX_SIZE)]
+        print(H,W)
+        self.all_boxes = [Box(i, j) for i in range(0, H, BOX_SIZE)
+                          for j in range(0, W, BOX_SIZE)]
         self.boxes = set()
         rand_int = random.randint(0, len(self.all_boxes))
 
@@ -149,7 +150,7 @@ class PongGame(Widget):
 
 class PongApp(App):
     def build(self):
-        self.game = PongGame(size=(900,600))
+        self.game = PongGame()
         self.game.setup()
         Clock.schedule_interval(self.game.update, 1.0 / 1.0)
         return self.game

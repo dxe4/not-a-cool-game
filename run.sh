@@ -1,1 +1,1 @@
-python2 game.py --size=900x600
+python2 game.py --size=600x600

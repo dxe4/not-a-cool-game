@@ -59,11 +59,11 @@ class Box(object):
         return self.pos[1]
 
     def draw(self):
+        self._clean_old_pos()
         Color(0, 0, 1., 1)
         Rectangle(pos=self.pos, size=(BOX_SIZE, BOX_SIZE))
         Label(text=self.number, font_size=15, pos=self.pos)
         self.drawn = True
-        self._clean_old_pos()
 
     def _clean_old_pos(self):
         if not self.old_pos:
@@ -136,15 +136,19 @@ class PongGame(Widget):
         except InvalidMove as e:
             pass
 
+    def make_player(self, all_boxes):
+        rand_int = random.randint(0, len(all_boxes))
+        rand_box = self.all_boxes[rand_int]
+        return Player(rand_box.x, rand_box.y)
+
     def setup(self):
         H, W = starmap(Config.getint, (("graphics", i) for i in ("height", "width")))
+
         self.all_boxes = [Box(i, j) for i in range(0, H, BOX_SIZE)
                           for j in range(0, W, BOX_SIZE)]
         self.boxes = set()
-        rand_int = random.randint(0, len(self.all_boxes))
 
-        rand_box = self.all_boxes[rand_int]
-        self.player = Player(rand_box.x, rand_box.y)
+        self.player = self.make_player(self.all_boxes)
         self.setup_keyboard()
 
     @property
@@ -163,23 +167,19 @@ class PongGame(Widget):
         new_box = copy(random.sample(self.free_boxes, 1)[0])
         self.boxes.add(new_box)
 
-
-    def draw_boxes(self):
-        self.random_box()
-        self.player.draw()
-        for i in (j for j in self.boxes if not j.drawn):
-            i.draw()
-
     def update(self, dt):
         with self.canvas:
-            self.draw_boxes()
+            self.random_box()
+            self.player.draw()
+            for i in (j for j in self.boxes if not j.drawn):
+                i.draw()
 
 
 class PongApp(App):
     def build(self):
         self.game = PongGame()
         self.game.setup()
-        Clock.schedule_interval(self.game.update, 1.0 * 5.0)
+        Clock.schedule_interval(self.game.update, 1.0 * 2.0)
         return self.game
 
 

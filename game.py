@@ -11,15 +11,6 @@ from itertools import starmap
 import random
 from copy import copy
 
-moves = {
-    "left": (-1, 0),
-    "right": (1, 0),
-    "up": (0, 1),
-    "down": (0, -1)
-}
-
-BOX_SIZE = 100
-
 
 def fibonacci(max_iter):
     a, b = 1, 1
@@ -28,6 +19,13 @@ def fibonacci(max_iter):
         a, b = b, a + b
 
 
+moves = {
+    "left": (-1, 0),
+    "right": (1, 0),
+    "up": (0, 1),
+    "down": (0, -1)
+}
+BOX_SIZE = 100
 fib_numbers = [i for i in fibonacci(20)]
 
 
@@ -112,11 +110,7 @@ class Player(DrawableMixIn):
             raise InvalidMove("Cant move to {}".format(new_pos))
 
 
-class PongGame(Widget):
-    ball = ObjectProperty(None)
-    player1 = ObjectProperty(None)
-    player2 = ObjectProperty(None)
-
+class NotACoolGame(Widget):
     def setup_keyboard(self):
         self._keyboard = Window.request_keyboard(
             self._keyboard_closed, self, 'text')
@@ -179,7 +173,7 @@ class PongGame(Widget):
 
 class PongApp(App):
     def build(self):
-        self.game = PongGame()
+        self.game = NotACoolGame()
         self.game.setup()
         Clock.schedule_interval(self.game.update, 1.0 * 2.0)
         return self.game

@@ -24,7 +24,7 @@ moves = {
     "down": (0, -1)
 }
 BOX_SIZE = 100
-fib_numbers = [i for i in fibonacci(20)]
+fib_numbers = [i for i in fibonacci(15)]
 
 
 class InvalidMove(Exception):
@@ -55,7 +55,7 @@ class DrawableMixIn(object):
         self._rec_color = Color(*self.color)
         self._rec = Rectangle(pos=self.pos, size=(BOX_SIZE, BOX_SIZE))
         self._label_color = Color(0, 0, 0)
-        self._label = Label(text=self.label, font_size=15, pos=self.pos)
+        self._label = Label(text=self.label, font_size=20, pos=self.pos)
         self.drawn = True
         self._clean_old_pos()
 
@@ -169,7 +169,7 @@ class NotACoolGame(Widget):
             for i in (j for j in self.boxes):
                 i.draw()
 
-class PongApp(App):
+class NotACoolApp(App):
     def build(self):
         self.game = NotACoolGame()
         self.game.setup()
@@ -178,4 +178,4 @@ class PongApp(App):
 
 
 if __name__ == '__main__':
-    PongApp().run()
+    NotACoolApp().run()

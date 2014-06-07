@@ -14,9 +14,7 @@ from kivy.config import Config
 from itertools import starmap
 from copy import copy
 import random
-
 from copy import copy
-
 
 def fibonacci(max_iter):
     a, b = 1, 1
@@ -45,10 +43,10 @@ class Box():
         self.drawn = True
 
 # Evil
-def Player(Box):
+class Player(Box):
     def draw(self, BOX_SIZE):
         Color(1, 0, 0, 1)
-        Ellipse(pos=(self.x - BOX_SIZE / 2, self.y - BOX_SIZE / 2), size=(BOX_SIZE, BOX_SIZE))
+        Rectangle(pos=(self.x, self.y), size=(BOX_SIZE, BOX_SIZE))
 
 
 class PongGame(Widget):
@@ -59,9 +57,15 @@ class PongGame(Widget):
     def setup(self):
         H, W = starmap(Config.getint, (("graphics", i) for i in ("height", "width")))
         self.BOX_SIZE = 100
-        self.free_boxes = {Box(i, j) for i in range(0, H, self.BOX_SIZE)
-                           for j in range(0, W, self.BOX_SIZE)}
+        self.free_boxes = [Box(i, j) for i in range(0, H, self.BOX_SIZE)
+                           for j in range(0, W, self.BOX_SIZE)]
         self.boxes = set()
+        rand_int = random.randint(0, len(self.free_boxes))
+
+        rand_box = self.free_boxes[rand_int]
+
+        self.player = Player(rand_box.x, rand_box.y)
+        self.free_boxes = set(self.free_boxes)
 
     def random_box(self):
         if not self.free_boxes:
@@ -76,6 +80,7 @@ class PongGame(Widget):
         self.random_box()
         for i in (j for j in self.boxes if not j.drawn):
             i.draw(self.BOX_SIZE)
+            self.player.draw(self.BOX_SIZE)
 
     def update(self, dt):
         with self.canvas:

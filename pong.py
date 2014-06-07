@@ -1,18 +1,12 @@
 from kivy.app import App
 from kivy.graphics.context_instructions import Color
-from kivy.graphics.texture import Texture
-from kivy.graphics.vertex_instructions import Rectangle, Ellipse
+from kivy.graphics.vertex_instructions import Rectangle
 from kivy.uix.label import Label
 from kivy.uix.widget import Widget
-from kivy.properties import (
-    NumericProperty, ReferenceListProperty,
-    ObjectProperty
-)
-from kivy.vector import Vector
+from kivy.properties import ObjectProperty
 from kivy.clock import Clock
 from kivy.config import Config
 from itertools import starmap
-from copy import copy
 import random
 from copy import copy
 

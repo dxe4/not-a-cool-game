@@ -123,7 +123,7 @@ class NotACoolGame(Widget):
 
 
     def make_player(self, all_boxes):
-        rand_int = random.randint(0, len(all_boxes))
+        rand_int = random.randint(0, len(all_boxes) - 1)
         rand_box = self.all_boxes[rand_int]
         return Player(rand_box.x, rand_box.y, "player", (1, 0, 0))
 

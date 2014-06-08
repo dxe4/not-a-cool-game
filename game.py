@@ -11,8 +11,8 @@ import random
 from copy import copy
 
 
-def fibonacci(max_iter):
-    a, b = 1, 1
+def fibonacci(max_iter, exclude_zero=False):
+    a, b = (1, 1) if exclude_zero else (0, 1)
     for i in range(0, max_iter):
         yield a
         a, b = b, a + b
@@ -25,7 +25,7 @@ moves = {
     "down": (0, -1)
 }
 BOX_SIZE = 100
-fib_numbers = [i for i in fibonacci(15)]
+fib_numbers = [i for i in fibonacci(15, exclude_zero=True)]
 
 
 class InvalidMove(Exception):

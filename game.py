@@ -10,6 +10,7 @@ from itertools import starmap
 import random
 from copy import copy
 
+
 def fibonacci(max_iter):
     a, b = 1, 1
     for i in range(0, max_iter):
@@ -107,6 +108,25 @@ class Player(DrawableMixIn):
 
 
 class NotACoolGame(Widget):
+    def setup(self):
+        self.slow_mode = True
+        self.count = 0
+        H, W = starmap(Config.getint, (("graphics", i) for i in ("height", "width")))
+
+        self.all_boxes = [Box(i, j, str(random.sample(fib_numbers, 1)[0]), (0, 0, 1))
+                          for i in range(0, H, BOX_SIZE)
+                          for j in range(0, W, BOX_SIZE)]
+        self.boxes = set()
+
+        self.player = self.make_player(self.all_boxes)
+        self.setup_keyboard()
+
+
+    def make_player(self, all_boxes):
+        rand_int = random.randint(0, len(all_boxes))
+        rand_box = self.all_boxes[rand_int]
+        return Player(rand_box.x, rand_box.y, "player", (1, 0, 0))
+
     def setup_keyboard(self):
         self._keyboard = Window.request_keyboard(
             self._keyboard_closed, self, 'text')
@@ -129,49 +149,32 @@ class NotACoolGame(Widget):
         except InvalidMove as e:
             pass
 
-    def make_player(self, all_boxes):
-        rand_int = random.randint(0, len(all_boxes))
-        rand_box = self.all_boxes[rand_int]
-        return Player(rand_box.x, rand_box.y, "player", (1, 0, 0))
-
-    def setup(self):
-        self.slow_mode = True
-        self.count = 0
-        H, W = starmap(Config.getint, (("graphics", i) for i in ("height", "width")))
-
-        self.all_boxes = [Box(i, j, str(random.sample(fib_numbers, 1)[0]), (0, 0, 1))
-                          for i in range(0, H, BOX_SIZE)
-                          for j in range(0, W, BOX_SIZE)]
-        self.boxes = set()
-
-        self.player = self.make_player(self.all_boxes)
-        self.setup_keyboard()
-
-    @property
-    def free_boxes_pos(self):
-        return [i.pos for i in self.free_boxes]
-
     @property
     def free_boxes(self):
         occupied = [i.pos for i in self.boxes]
         occupied.append(self.player.pos)
         return [i for i in self.all_boxes if i.pos not in occupied]
 
-    def random_box(self):
+    @property
+    def free_boxes_pos(self):
+        return [i.pos for i in self.free_boxes]
+
+    def update(self, dt):
+        self.count += 1
+        if self.count % 10 and self.slow_mode:
+            return
+        with self.canvas:
+            self.make_random_box()
+            self.player.draw()
+            for i in (j for j in self.boxes):
+                i.draw()
+
+    def make_random_box(self):
         if not self.free_boxes:
             return
         new_box = copy(random.sample(self.free_boxes, 1)[0])
         self.boxes.add(new_box)
 
-    def update(self, dt):
-        self.count +=1
-        if self.count % 10 and self.slow_mode:
-            return
-        with self.canvas:
-            self.random_box()
-            self.player.draw()
-            for i in (j for j in self.boxes):
-                i.draw()
 
 class NotACoolApp(App):
     def build(self):
